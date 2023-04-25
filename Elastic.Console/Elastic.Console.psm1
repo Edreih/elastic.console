@@ -26,8 +26,17 @@ $Script:methods = @("GET", "PUT", "POST", "DELETE", "HEAD")
 
 $forwardSlashChar = @('/')
 
-# Rely on the OS default for valid SSL/TLS protocols
-[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::SystemDefault
+#Use Tls12 Security Protocol if it is available otherwise use SystemDefault
+if (([Net.SecurityProtocolType].GetEnumNames() -contains 'Tls12') -and
+
+    #And Tls12 is not already in use
+    (-not ([System.Net.ServicePointManager]::SecurityProtocol -match 'Tls12'))) {
+
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+}
+else {
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::SystemDefault
+}
 
 # Disable nagling and expect 100 continue. Only valid for PowerShell versions
 # where ServicePointManager is used i.e. PowerShell not based on .NET Core and NetStandard
